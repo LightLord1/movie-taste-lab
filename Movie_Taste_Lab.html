@@ -1,0 +1,467 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}</style></head><body><title>Movie Taste Lab</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: a projection-booth console — one reel (question) at a time on a dark screen, Technicolor registration colours as the only accents. */
+:root{
+  --ink:#0e1320;        /* booth darkness */
+  --panel:#161d2c;
+  --panel-2:#1d2639;
+  --line:#2b3549;
+  --paper:#ebe5d6;      /* projected light */
+  --muted:#98a1b3;
+  --cyan:#3cc0c8;
+  --magenta:#e0467a;
+  --yellow:#f1c84b;
+  --focus:#f1c84b;
+  --display:"Big Shoulders Display", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+*{box-sizing:border-box}
+html,body{background:var(--ink);color:var(--paper)}
+body{font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 64px}
+
+/* header */
+.bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.brand{font-family:var(--display);font-weight:800;font-size:22px;letter-spacing:.06em;text-transform:uppercase}
+.reg{display:inline-flex;gap:4px;margin-right:10px;vertical-align:middle}
+.reg i{width:9px;height:9px;border-radius:50%;display:block}
+.reg i:nth-child(1){background:var(--cyan)}.reg i:nth-child(2){background:var(--magenta)}.reg i:nth-child(3){background:var(--yellow)}
+.tc{font-family:var(--mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+
+/* film-strip progress */
+.strip{display:grid;grid-template-columns:repeat(19,1fr);gap:3px;margin-top:14px}
+.strip span{height:8px;border-radius:2px;background:var(--panel-2)}
+.strip span.done{background:var(--cyan)}
+.strip span.now{background:var(--yellow)}
+
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.02;letter-spacing:.01em}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.eyebrow b{color:var(--yellow);font-weight:500}
+p{margin:0}
+.lead{color:var(--muted);max-width:60ch}
+
+/* intro */
+.hero{display:grid;gap:18px;padding-block:36px 8px}
+.hero h1{font-size:clamp(52px,12vw,104px);font-weight:800;text-transform:uppercase}
+.hero h1 .c{color:var(--cyan)}.hero h1 .m{color:var(--magenta)}
+.facts{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.facts span::before{content:"▸ ";color:var(--magenta)}
+.picker{display:grid;gap:12px;margin-top:22px;padding:20px;border:1px solid var(--line);border-radius:6px;background:var(--panel)}
+.names{display:flex;flex-wrap:wrap;gap:8px}
+.chip{appearance:none;border:1px solid var(--line);background:var(--panel-2);color:var(--paper);font:600 15px/1 var(--body);padding:11px 16px;border-radius:999px;cursor:pointer;letter-spacing:.04em}
+.chip:hover{border-color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--yellow);color:#1a1405;border-color:var(--yellow)}
+input[type=text],textarea{width:100%;background:var(--ink);border:1px solid var(--line);color:var(--paper);border-radius:4px;padding:12px 14px;font:16px/1.4 var(--body)}
+textarea{min-height:96px;resize:vertical}
+input::placeholder,textarea::placeholder{color:#6d7689}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{appearance:none;border:0;background:var(--yellow);color:#1a1405;font:600 16px/1 var(--body);padding:14px 22px;border-radius:4px;cursor:pointer;letter-spacing:.02em}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--paper);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:var(--muted)}
+.btn.small{padding:10px 14px;font-size:14px}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.note{font-size:13px;color:var(--muted)}
+.saved-hint{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px 14px;border-left:3px solid var(--cyan);background:var(--panel);font-size:14px}
+
+/* question */
+.q{display:grid;gap:22px;padding-block:34px 10px}
+.q h2{font-size:clamp(34px,7vw,54px);font-weight:800}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.opts.five{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:520px){.opts,.opts.five{grid-template-columns:1fr}}
+.opt{appearance:none;text-align:left;display:grid;gap:4px;padding:18px;border:1px solid var(--line);background:var(--panel);color:var(--paper);border-radius:6px;cursor:pointer;font:500 17px/1.3 var(--body);min-width:0;transition:border-color .15s, background .15s, transform .15s}
+.opt small{font:500 11px/1 var(--mono);letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+.opt:hover{border-color:var(--cyan);transform:translateY(-1px)}
+.opt[aria-pressed="true"]{border-color:var(--magenta);background:color-mix(in srgb, var(--magenta) 16%, var(--panel))}
+.qnav{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+
+/* results */
+.res{display:grid;gap:28px;padding-block:30px 0}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:20px;display:grid;gap:14px;min-width:0}
+.arch h2{font-size:clamp(44px,10vw,84px);font-weight:800;text-transform:uppercase;color:var(--yellow)}
+.arch .desc{font-size:18px;max-width:58ch}
+.ideal{font-size:15px;color:var(--paper);padding:12px 14px;border-left:3px solid var(--magenta);background:var(--panel-2)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:620px){.grid2{grid-template-columns:1fr}}
+h3{font-size:24px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+
+.pole{display:grid;gap:6px}
+.pole .ends{display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.track{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--panel-2),var(--line),var(--panel-2))}
+.track .mid{position:absolute;left:50%;top:-3px;width:1px;height:16px;background:var(--muted);opacity:.5}
+.track .dot{position:absolute;top:50%;width:20px;height:20px;border-radius:50%;transform:translate(-50%,-50%);border:3px solid var(--ink)}
+
+.bars{display:grid;gap:8px}
+.bars .b{display:grid;grid-template-columns:96px 1fr 28px;gap:10px;align-items:center;font-size:14px}
+.bars .fill{height:10px;border-radius:5px;background:var(--panel-2);overflow:hidden}
+.bars .fill i{display:block;height:100%;border-radius:5px}
+.bars .n{font-family:var(--mono);font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+
+svg text{font-family:var(--mono)}
+.svgbox{width:100%;max-width:100%}
+.personal dl{display:grid;gap:12px;margin:0}
+.personal dt{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.personal dd{margin:2px 0 0;font-size:16px}
+
+/* team board */
+.board{display:grid;gap:16px;margin-top:8px}
+.members{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.m{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:14px;display:grid;gap:6px;min-width:0}
+.m .who{display:flex;align-items:center;gap:8px;font-weight:600;letter-spacing:.04em}
+.m .who i{width:12px;height:12px;border-radius:50%;flex:none}
+.m .a{font-family:var(--display);font-weight:800;font-size:24px;text-transform:uppercase;line-height:1}
+.m .meta{font-size:13px;color:var(--muted)}
+.empty{padding:22px;border:1px dashed var(--line);border-radius:6px;color:var(--muted);font-size:15px}
+.status{font-size:14px;color:var(--cyan);min-height:1.3em}
+.status.err{color:var(--magenta)}
+hr{border:0;border-top:1px solid var(--line);margin:8px 0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <div class="brand"><span class="reg" aria-hidden="true"><i></i><i></i><i></i></span>Movie Taste Lab</div>
+    <div class="tc" id="tc">TEAM 3 · EXPANDED MOVIE</div>
+  </header>
+  <div class="strip" id="strip" aria-hidden="true"></div>
+  <main id="app"></main>
+  <section id="team" aria-labelledby="teamTitle"></section>
+</div>
+
+<script>
+(() => {
+  const NAMES = ["ILYA","NADJA","HASSAN","KYLE","VICTORIA"];
+  const DOT = ["#3cc0c8","#e0467a","#f1c84b","#f08a4b","#9d7cf0","#6fcf7f","#e9e3d4"];
+
+  // Each option carries its effect on the taste dimensions.
+  // mood: + dark / - light · fant: + fantastical / - realistic · pace: + fast / - slow
+  const Q = [
+    {d:"Mood", q:"It's Friday night. You pick…", o:[["A dark thriller",{mood:1}],["A feel-good comedy",{mood:-1}]]},
+    {d:"Mood", q:"The best ending is…", o:[["Bittersweet and haunting",{mood:1}],["Warm and hopeful",{mood:-1}]]},
+    {d:"Mood", q:"Your favourite colour palette in a film", o:[["Neon and shadows",{mood:1,fant:.5}],["Golden and sunny",{mood:-1}],["Pastel and dreamy",{mood:-.5,fant:1}],["Grey and cold",{mood:.5,fant:-1}]]},
+    {d:"Reality", q:"Which world would you rather explore?", o:[["A real city at night",{fant:-1,mood:.5}],["A magical kingdom",{fant:1,mood:-.5}],["A dystopian future",{fant:.5,mood:1}],["A dream world",{fant:1}]]},
+    {d:"Reality", q:"A film is great when…", o:[["It feels like real life",{fant:-1}],["It shows something impossible",{fant:1}]]},
+    {d:"Pace", q:"A three-minute shot with no dialogue is…", o:[["Beautiful",{pace:-1}],["Boring",{pace:1}]]},
+    {d:"Pace", q:"Pick a rhythm", o:[["A long night train journey",{pace:-1}],["A car chase through the city",{pace:1}]]},
+    {d:"Pace", q:"Your ideal running time", o:[["A tight 90 minutes",{pace:1}],["A three-hour epic",{pace:-1}]]},
+    {d:"Sense", q:"What stays with you after a film?", o:[["A line of dialogue",{sense:"Story"}],["An image",{sense:"Visuals"}],["A song",{sense:"Music"}],["A character",{sense:"Characters"}]]},
+    {d:"Sense", q:"You can only keep one", o:[["The script",{sense:"Story"}],["The cinematography",{sense:"Visuals"}],["The soundtrack",{sense:"Music"}],["The actors",{sense:"Characters"}]]},
+    {d:"Emotion", q:"You watch films mostly to…", o:[["Feel adrenaline",{emo:"Thrill"}],["Laugh",{emo:"Laughter"}],["Be amazed",{emo:"Wonder"}],["Remember",{emo:"Nostalgia"}],["Feel something deep",{emo:"Melancholy"}]]},
+    {d:"Emotion", q:"Which scene would you rewatch forever?", o:[["A jump scare",{emo:"Thrill"}],["A chaotic dinner scene",{emo:"Laughter"}],["A magical reveal",{emo:"Wonder"}],["A childhood memory",{emo:"Nostalgia"}],["A quiet goodbye",{emo:"Melancholy"}]]},
+    {d:"Experience", q:"In an immersive experience, you'd rather…", o:[["Sit back and enjoy a great show",{realm:"ent"}],["Learn the secrets behind the story",{realm:"edu"}],["Wander and soak in the atmosphere",{realm:"est"}],["Become a character and change the story",{realm:"esc"}]]},
+    {d:"Experience", q:"At a party inside a movie world, you are…", o:[["In the audience, enjoying the show",{realm:"ent"}],["The detective asking questions",{realm:"edu"}],["The quiet observer in the corner",{realm:"est"}],["The main character",{realm:"esc"}]]},
+    {d:"Experience", q:"Your dream role in a film world", o:[["Front-row spectator",{realm:"ent"}],["Historian",{realm:"edu"}],["Wanderer",{realm:"est"}],["Hero",{realm:"esc"}]]},
+    {d:"Personal", key:"rewatched", q:"The film you've watched the most times?", text:true, ph:"e.g. Spirited Away, eleven times"},
+    {d:"Personal", key:"changed", q:"A film that changed how you see the world?", text:true, ph:"Title, and one sentence why"},
+    {d:"Personal", key:"unpopular", q:"A film everyone loves, but you don't?", text:true, ph:"No judgement here"},
+    {d:"Personal", key:"genre", q:"If your life were a film, what genre would it be?", text:true, ph:"e.g. a slow road movie with a twist"},
+  ];
+  const SENSES = ["Story","Visuals","Music","Characters"];
+  const EMOS = ["Thrill","Laughter","Wonder","Nostalgia","Melancholy"];
+  const REALMS = {ent:"Entertainment",edu:"Educational",est:"Esthetic",esc:"Escapist"};
+
+  const ARCH = {
+    "esc-dark":{n:"The Shadow Protagonist",d:"You don't want to watch the story, you want to be in it, preferably where it gets dark, tense and morally grey.",i:"An immersive thriller where you get a secret role and your choices change the ending."},
+    "esc-light":{n:"The Main Character",d:"You step into a world and own it. Costumes, roles, big moments: you're there to play, not to watch.",i:"A playful world with a clear role for you, other players to team up with, and a big finale."},
+    "est-fant":{n:"The Dream Seeker",d:"You're drawn to wonder and atmosphere. A world doesn't need a plot if it feels like a dream you can walk through.",i:"A surreal, visually rich space with music and hidden rooms to discover at your own pace."},
+    "est-real":{n:"The Night Wanderer",d:"You love mood, real places and quiet details. Cities at night, light on wet streets, the feeling of a scene more than its plot.",i:"A walk through a real city where sound and story are layered over the streets."},
+    "ent-fast":{n:"The Thrill Rider",d:"Give you pace, spectacle and a crowd. You want to feel the energy in your whole body and share it with others.",i:"A high-energy show with music, effects and a crowd moment you'll talk about for weeks."},
+    "ent-slow":{n:"The Front-Row Romantic",d:"You love a beautifully made show and the feeling of being carried by it. Craft, emotion and atmosphere matter more than speed.",i:"A cinematic live experience with live music and a story that unfolds around you."},
+    "edu-dark":{n:"The Story Detective",d:"You want to understand: the clues, the backstory, the why. Mysteries and dark secrets are your natural habitat.",i:"An investigation through a story world, with documents, clues and characters who hide things."},
+    "edu-light":{n:"The Curious Historian",d:"You love the world behind the film: how it was made, where it happened, what it means. Context makes everything richer.",i:"A behind-the-scenes journey through real locations, props and stories from the making of a film."},
+  };
+
+  // ---------- state ----------
+  const S = {step:-1, nick:"", answers:Array(Q.length).fill(null), personal:{}};
+  let db=null, user=null, uid=null, teamDocs=[], myDoc=null, unsub=null;
+
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const app = $("#app");
+
+  function strip(){
+    const el = $("#strip"); el.innerHTML = "";
+    Q.forEach((_,i)=>{const s=document.createElement("span"); if(S.answers[i]!==null || (Q[i].text && S.step>i)) s.className="done"; if(i===S.step) s.className="now"; el.appendChild(s);});
+    $("#tc").textContent = S.step>=0 && S.step<Q.length ? `REEL ${String(S.step+1).padStart(2,"0")} / ${Q.length}` : (S.step>=Q.length ? "THE END" : "TEAM 3 · EXPANDED MOVIE");
+  }
+
+  // ---------- scoring ----------
+  function score(answers){
+    const r = {mood:0,fant:0,pace:0,max:{mood:0,fant:0,pace:0},sense:{},emo:{},realm:{ent:0,edu:0,est:0,esc:0}};
+    SENSES.forEach(k=>r.sense[k]=0); EMOS.forEach(k=>r.emo[k]=0);
+    Q.forEach((q,i)=>{
+      if(q.text) return;
+      ["mood","fant","pace"].forEach(k=>{const m=Math.max(...q.o.map(o=>Math.abs(o[1][k]||0))); if(m) r.max[k]+=m;});
+      const a = answers[i]; if(a===null||a===undefined) return;
+      const e = q.o[a][1];
+      ["mood","fant","pace"].forEach(k=>{ if(e[k]) r[k]+=e[k]; });
+      if(e.sense) r.sense[e.sense]++; if(e.emo) r.emo[e.emo]++; if(e.realm) r.realm[e.realm]++;
+    });
+    const n = k => r.max[k] ? Math.max(-1,Math.min(1,r[k]/r.max[k])) : 0;
+    const out = {mood:n("mood"), fant:n("fant"), pace:n("pace"), sense:r.sense, emo:r.emo, realm:r.realm};
+    const order = ["esc","est","edu","ent"];
+    const top = order.reduce((b,k)=> r.realm[k]>r.realm[b]?k:b, order[0]);
+    const key = top==="esc" ? (out.mood>=0?"esc-dark":"esc-light")
+              : top==="est" ? (out.fant>=0?"est-fant":"est-real")
+              : top==="ent" ? (out.pace>=0?"ent-fast":"ent-slow")
+              : (out.mood>=0?"edu-dark":"edu-light");
+    out.arch = key;
+    out.topSense = SENSES.reduce((b,k)=>r.sense[k]>r.sense[b]?k:b, SENSES[0]);
+    out.topEmo = EMOS.reduce((b,k)=>r.emo[k]>r.emo[b]?k:b, EMOS[0]);
+    out.topRealm = top;
+    return out;
+  }
+
+  // ---------- views ----------
+  function intro(){
+    S.step=-1; strip();
+    const hint = myDoc ? `<div class="saved-hint"><span>Your saved profile: <b>${esc(ARCH[myDoc.arch]?.n||"")}</b></span><button class="btn small ghost" id="viewMine">See my result</button></div>` : "";
+    app.innerHTML = `
+      <section class="hero">
+        <p class="eyebrow">Group 3 · Research Sprint warm-up</p>
+        <h1>What's your <span class="c">film</span> <span class="m">taste</span>?</h1>
+        <p class="lead">Nineteen quick questions about the films you love and the worlds you'd want to step into. At the end you get your taste profile, and the team board shows where our tastes meet, which helps us pick the movie for our Expanded Movie Experience.</p>
+        <div class="facts"><span>19 questions</span><span>about 5 minutes</span><span>no wrong answers</span></div>
+        ${hint}
+        <div class="picker">
+          <p class="eyebrow">Who's in the projection booth?</p>
+          <div class="names" id="names">${NAMES.map(n=>`<button class="chip" aria-pressed="${S.nick===n}" data-n="${n}">${n}</button>`).join("")}<button class="chip" aria-pressed="${!!S.nick && !NAMES.includes(S.nick)}" data-n="__other">Someone else</button></div>
+          <input type="text" id="otherName" placeholder="Your name" maxlength="24" ${S.nick && !NAMES.includes(S.nick) ? `value="${esc(S.nick)}"` : "hidden"}>
+          <div class="row"><button class="btn" id="start" ${S.nick?"":"disabled"}>Start the reel</button></div>
+        </div>
+      </section>`;
+    const other = $("#otherName");
+    $("#names").addEventListener("click", e=>{
+      const b = e.target.closest(".chip"); if(!b) return;
+      $("#names").querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      if(b.dataset.n==="__other"){ other.hidden=false; other.focus(); S.nick=other.value.trim(); }
+      else { other.hidden=true; S.nick=b.dataset.n; }
+      $("#start").disabled = !S.nick;
+    });
+    other.addEventListener("input",()=>{ S.nick=other.value.trim().slice(0,24); $("#start").disabled=!S.nick; });
+    $("#start").addEventListener("click",()=>{ S.step=0; question(); });
+    $("#viewMine")?.addEventListener("click",()=>{ S.nick=myDoc.nick||S.nick; S.answers=(myDoc.answers||[]).slice(0,Q.length); while(S.answers.length<Q.length) S.answers.push(null); S.personal={...(myDoc.personal||{})}; S.step=Q.length; result(); });
+  }
+
+  function question(){
+    strip();
+    const q = Q[S.step];
+    const i = S.step;
+    if(q.text){
+      app.innerHTML = `
+        <section class="q">
+          <p class="eyebrow"><b>${esc(q.d)}</b> · optional · for conversation</p>
+          <h2>${esc(q.q)}</h2>
+          <textarea id="t${i}" placeholder="${esc(q.ph)}" maxlength="300">${esc(S.personal[q.key]||"")}</textarea>
+          <div class="qnav"><button class="btn ghost" id="back">Back</button><div class="row"><button class="btn ghost" id="skip">Skip</button><button class="btn" id="next">${i===Q.length-1?"See my profile":"Next"}</button></div></div>
+        </section>`;
+      const t = $("#t"+i);
+      const go = (keep) => { S.personal[q.key] = keep ? t.value.trim() : ""; S.step++; S.step>=Q.length ? result() : question(); };
+      $("#next").addEventListener("click",()=>go(true));
+      $("#skip").addEventListener("click",()=>go(false));
+      $("#back").addEventListener("click",()=>{ S.personal[q.key]=t.value.trim(); S.step--; question(); });
+      t.focus({preventScroll:true});
+      return;
+    }
+    app.innerHTML = `
+      <section class="q">
+        <p class="eyebrow"><b>${esc(q.d)}</b> · question ${i+1} of ${Q.length}</p>
+        <h2>${esc(q.q)}</h2>
+        <div class="opts ${q.o.length>4?"five":""}">
+          ${q.o.map((o,k)=>`<button class="opt" aria-pressed="${S.answers[i]===k}" data-k="${k}"><small>${String.fromCharCode(65+k)}</small>${esc(o[0])}</button>`).join("")}
+        </div>
+        <div class="qnav"><button class="btn ghost" id="back">${i===0?"Change name":"Back"}</button>${S.answers[i]!==null?`<button class="btn" id="fwd">Next</button>`:""}</div>
+      </section>`;
+    app.querySelector(".opts").addEventListener("click",e=>{
+      const b = e.target.closest(".opt"); if(!b) return;
+      S.answers[i] = +b.dataset.k;
+      app.querySelectorAll(".opt").forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false"));
+      setTimeout(()=>{ if(S.step===i){ S.step++; question(); } }, 260);
+    });
+    $("#back").addEventListener("click",()=>{ S.step--; S.step<0 ? intro() : question(); });
+    $("#fwd")?.addEventListener("click",()=>{ S.step++; question(); });
+  }
+
+  function pole(label, left, right, v, color){
+    const pct = 50 + v*45;
+    return `<div class="pole"><div class="ends"><span>${left}</span><span>${esc(label)}</span><span>${right}</span></div>
+      <div class="track"><span class="mid"></span><span class="dot" style="left:${pct}%;background:${color}"></span></div></div>`;
+  }
+  function bars(obj, keys, color){
+    const max = Math.max(1,...keys.map(k=>obj[k]||0));
+    return `<div class="bars">${keys.map(k=>`<div class="b"><span>${k}</span><span class="fill"><i style="width:${(obj[k]||0)/max*100}%;background:${color}"></i></span><span class="n">${obj[k]||0}</span></div>`).join("")}</div>`;
+  }
+  function realmMap(realm){
+    const t = Object.values(realm).reduce((a,b)=>a+b,0)||1;
+    const x = ((realm.edu+realm.esc)-(realm.ent+realm.est))/t; // passive -1 … active +1
+    const y = ((realm.est+realm.esc)-(realm.ent+realm.edu))/t; // absorption -1 … immersion +1
+    const cx = 200 + x*110, cy = 150 + y*85;
+    const cell = (k,xx,yy) => `<rect x="${xx}" y="${yy}" width="170" height="120" rx="4" fill="${realm[k]?"#1d2639":"#161d2c"}" stroke="#2b3549"/>
+      <text x="${xx+85}" y="${yy+66}" text-anchor="middle" fill="${realm[k]?"#ebe5d6":"#98a1b3"}" font-size="14">${REALMS[k].toUpperCase()}</text>`;
+    return `<svg class="svgbox" viewBox="0 0 400 300" role="img" aria-label="Experience realm map">
+      ${cell("ent",30,30)}${cell("edu",200,30)}${cell("est",30,150)}${cell("esc",200,150)}
+      <text x="115" y="20" text-anchor="middle" fill="#98a1b3" font-size="11">PASSIVE</text>
+      <text x="285" y="20" text-anchor="middle" fill="#98a1b3" font-size="11">ACTIVE</text>
+      <text x="14" y="90" fill="#98a1b3" font-size="11" transform="rotate(-90 14 90)" text-anchor="middle">ABSORB</text>
+      <text x="14" y="210" fill="#98a1b3" font-size="11" transform="rotate(-90 14 210)" text-anchor="middle">IMMERSE</text>
+      <circle cx="${cx}" cy="${cy}" r="11" fill="#e0467a" stroke="#0e1320" stroke-width="3"/>
+    </svg>`;
+  }
+
+  function summaryText(sc){
+    const a = ARCH[sc.arch];
+    const p = Q.filter(q=>q.text && S.personal[q.key]).map(q=>`${q.q} ${S.personal[q.key]}`).join("\n");
+    return `${S.nick}: ${a.n}\n${a.d}\nMood ${sc.mood>=0?"dark":"light"} (${Math.round(Math.abs(sc.mood)*100)}%), ${sc.fant>=0?"fantastical":"realistic"} (${Math.round(Math.abs(sc.fant)*100)}%), ${sc.pace>=0?"fast":"slow"} pace (${Math.round(Math.abs(sc.pace)*100)}%)\nHooked by: ${sc.topSense} · Looking for: ${sc.topEmo} · Experience type: ${REALMS[sc.topRealm]}${p?"\n\n"+p:""}`;
+  }
+
+  function result(){
+    strip();
+    const sc = score(S.answers);
+    const a = ARCH[sc.arch];
+    const personalRows = Q.filter(q=>q.text && S.personal[q.key]);
+    app.innerHTML = `
+      <section class="res">
+        <div class="arch" style="display:grid;gap:14px">
+          <p class="eyebrow">${esc(S.nick)}'s taste profile</p>
+          <h2>${esc(a.n)}</h2>
+          <p class="desc">${esc(a.d)}</p>
+          <p class="ideal"><b>Your ideal Expanded Movie Experience:</b> ${esc(a.i)}</p>
+        </div>
+        <div class="card">
+          <h3>Your tone</h3>
+          ${pole("Mood","Light","Dark",sc.mood,"#e0467a")}
+          ${pole("Reality","Realistic","Fantastical",sc.fant,"#3cc0c8")}
+          ${pole("Pace","Slow","Fast",sc.pace,"#f1c84b")}
+        </div>
+        <div class="grid2">
+          <div class="card"><h3>What hooks you</h3>${bars(sc.sense,SENSES,"#3cc0c8")}</div>
+          <div class="card"><h3>What you look for</h3>${bars(sc.emo,EMOS,"#e0467a")}</div>
+        </div>
+        <div class="card">
+          <h3>Your experience type</h3>
+          <p class="note">Based on Pine &amp; Gilmore's four realms of experience (<i>The Experience Economy</i>): how actively you take part, and whether the experience comes to you or you step inside it. Top realm: <b style="color:var(--paper)">${REALMS[sc.topRealm]}</b>.</p>
+          ${realmMap(sc.realm)}
+        </div>
+        ${personalRows.length?`<div class="card personal"><h3>Your film moments</h3><dl>${personalRows.map(q=>`<div><dt>${esc(q.q)}</dt><dd>${esc(S.personal[q.key])}</dd></div>`).join("")}</dl></div>`:""}
+        <div class="card">
+          <h3>Share it with the team</h3>
+          <p class="note" id="saveNote">Saving puts your profile and your answers on the team board below. Everyone who opens this page can see them.</p>
+          <div class="row">
+            <button class="btn" id="save">Save to team board</button>
+            <button class="btn ghost" id="copy">Copy my result</button>
+            <button class="btn ghost" id="redo">Retake</button>
+          </div>
+          <p class="status" id="status" role="status"></p>
+          <textarea id="copyBox" readonly hidden></textarea>
+        </div>
+      </section>`;
+    const status = $("#status");
+    const setStatus = (t,err) => { status.textContent=t; status.classList.toggle("err",!!err); };
+    $("#redo").addEventListener("click",()=>{ S.answers=Array(Q.length).fill(null); S.personal={}; S.step=0; question(); });
+    $("#copy").addEventListener("click",async()=>{
+      const txt = summaryText(sc);
+      try{ await navigator.clipboard.writeText(txt); setStatus("Copied. Paste it into the group chat."); }
+      catch(_){ const box=$("#copyBox"); box.hidden=false; box.value=txt; box.focus(); box.select(); setStatus("Select all and copy the text above."); }
+    });
+    const saveBtn = $("#save");
+    if(!db || !uid){
+      saveBtn.disabled = true;
+      $("#saveNote").textContent = "Copy your result and paste it into our group chat.";
+    }
+    saveBtn.addEventListener("click",async()=>{
+      if(!db||!uid) return;
+      saveBtn.disabled = true; setStatus("Saving…");
+      const body = {nick:S.nick, arch:sc.arch, mood:sc.mood, fant:sc.fant, pace:sc.pace, sense:sc.sense, emo:sc.emo, realm:sc.realm,
+        topSense:sc.topSense, topEmo:sc.topEmo, topRealm:sc.topRealm, answers:S.answers, personal:S.personal, at:Date.now(), v:1};
+      try{ await db.doc("results/"+uid).set(body); setStatus("Saved. You're on the team board."); $("#team").scrollIntoView({behavior:"smooth",block:"start"}); }
+      catch(e){ setStatus(e && e.code==="permission_denied" ? "You can view this page but not save to it. Ask Ilya to share it with you as a Contributor." : "Couldn't save right now. Try again in a moment, or copy your result instead.", true); }
+      finally{ saveBtn.disabled = false; }
+    });
+  }
+
+  // ---------- team board ----------
+  function colorFor(nick){ const i = NAMES.indexOf(nick); if(i>=0) return DOT[i]; let h=0; for(const c of nick||"") h=(h*31+c.charCodeAt(0))>>>0; return DOT[5+(h%2)]; }
+  function tasteMap(docs){
+    const dots = docs.map(d=>{
+      const x = 60 + ((d.mood||0)+1)/2*300, y = 260 - ((d.fant||0)+1)/2*220;
+      const c = colorFor(d.nick);
+      return `<g><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="9" fill="${c}" stroke="#0e1320" stroke-width="2"/><text x="${(x+13).toFixed(1)}" y="${(y+4).toFixed(1)}" fill="#ebe5d6" font-size="12">${esc(d.nick)}</text></g>`;
+    }).join("");
+    return `<svg class="svgbox" viewBox="0 0 420 300" role="img" aria-label="Team taste map: light to dark, realistic to fantastical">
+      <rect x="60" y="40" width="300" height="220" rx="4" fill="#161d2c" stroke="#2b3549"/>
+      <line x1="210" y1="40" x2="210" y2="260" stroke="#2b3549"/><line x1="60" y1="150" x2="360" y2="150" stroke="#2b3549"/>
+      <text x="60" y="282" fill="#98a1b3" font-size="11">LIGHT</text><text x="360" y="282" fill="#98a1b3" font-size="11" text-anchor="end">DARK</text>
+      <text x="60" y="30" fill="#98a1b3" font-size="11">FANTASTICAL</text><text x="60" y="296" fill="#98a1b3" font-size="11" opacity="0">.</text>
+      <text x="368" y="258" fill="#98a1b3" font-size="11">REAL</text>
+      <text x="135" y="100" fill="#2f3a52" font-size="12" text-anchor="middle">DREAMY</text>
+      <text x="285" y="100" fill="#2f3a52" font-size="12" text-anchor="middle">DARK FANTASY</text>
+      <text x="135" y="210" fill="#2f3a52" font-size="12" text-anchor="middle">FEEL-GOOD REAL</text>
+      <text x="285" y="210" fill="#2f3a52" font-size="12" text-anchor="middle">GRITTY REAL</text>
+      ${dots}
+    </svg>`;
+  }
+  function team(){
+    const el = $("#team");
+    const docs = teamDocs.slice().sort((a,b)=>(a.nick||"").localeCompare(b.nick||""));
+    let body;
+    if(!db){
+      body = `<p class="empty">Press <b>Copy my result</b> above and paste it into our group chat, so we can compare our tastes together.</p>`;
+    } else if(!docs.length){
+      body = `<p class="empty">No profiles yet. Take the quiz above and press <b>Save to team board</b>: your dot appears on the taste map and everyone sees where our tastes meet.</p>`;
+    } else {
+      const avg = k => docs.reduce((s,d)=>s+(d[k]||0),0)/docs.length;
+      const realmTot = {ent:0,edu:0,est:0,esc:0}; docs.forEach(d=>Object.keys(realmTot).forEach(k=>realmTot[k]+=(d.realm?.[k]||0)));
+      const topRealm = Object.keys(realmTot).reduce((b,k)=>realmTot[k]>realmTot[b]?k:b,"esc");
+      body = `
+        <div class="grid2">
+          <div class="card"><h3>Taste map</h3><p class="note">Each dot is one person. A cluster is a good sign for a movie we'll all enjoy working on.</p>${tasteMap(docs)}</div>
+          <div class="card"><h3>Team average</h3>
+            ${pole("Mood","Light","Dark",avg("mood"),"#e0467a")}
+            ${pole("Reality","Realistic","Fantastical",avg("fant"),"#3cc0c8")}
+            ${pole("Pace","Slow","Fast",avg("pace"),"#f1c84b")}
+            <p class="note">Most common experience type: <b style="color:var(--paper)">${REALMS[topRealm]}</b> · ${docs.length} of ${NAMES.length} profiles saved</p>
+          </div>
+        </div>
+        <div class="members">
+          ${docs.map(d=>{const a=ARCH[d.arch]||{n:"—"}; const p=d.personal||{}; return `<article class="m">
+            <div class="who"><i style="background:${colorFor(d.nick)}"></i>${esc(d.nick)}</div>
+            <div class="a">${esc(a.n)}</div>
+            <div class="meta">${esc(d.topSense||"")} · ${esc(d.topEmo||"")} · ${esc(REALMS[d.topRealm]||"")}</div>
+            ${p.rewatched?`<div class="meta">Most rewatched: <span style="color:var(--paper)">${esc(p.rewatched)}</span></div>`:""}
+            ${p.genre?`<div class="meta">Life genre: <span style="color:var(--paper)">${esc(p.genre)}</span></div>`:""}
+          </article>`;}).join("")}
+        </div>`;
+    }
+    el.innerHTML = `<hr><div class="board" style="padding-top:28px"><p class="eyebrow">Team board</p><h2 id="teamTitle" style="font-size:clamp(34px,7vw,52px);font-weight:800;text-transform:uppercase">Where our tastes meet</h2>${body}</div>`;
+  }
+
+  // ---------- boot ----------
+  intro(); team();
+  (async () => {
+    try{
+      if(!window.claude || !window.claude.use) return;
+      [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if(user) uid = await user.id();
+      if(!db){ team(); return; }
+      unsub = db.collection("results").onSnapshot(snap=>{
+        teamDocs = snap.docs.filter(d=>d.exists).map(d=>({id:d.id, ...d.data()}));
+        const mine = uid ? teamDocs.find(d=>d.id===uid) : null;
+        const hadMine = !!myDoc; myDoc = mine || null;
+        team();
+        if(S.step===-1 && (!!myDoc)!==hadMine) intro();
+        if(S.step>=Q.length){ const b=$("#save"); if(b && uid){ b.disabled=false; const n=$("#saveNote"); if(n && n.textContent.startsWith("The team board needs")) n.textContent="Saving puts your profile and your answers on the team board below. Everyone who opens this page can see them."; } }
+      }, ()=>{ team(); });
+      if(S.step>=Q.length) result();
+    }catch(_){ team(); }
+  })();
+})();
+</script>
+</body></html>
